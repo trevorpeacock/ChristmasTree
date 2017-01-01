@@ -1,7 +1,6 @@
 #define ROWS 16
 #define LEDS_PER_ROW 30
 #define NUM_LEDS ROWS*LEDS_PER_ROW
-#define LED_DATA_PIN 2
 
 CRGB leds[NUM_LEDS];
 
@@ -18,7 +17,6 @@ class WaitFor {
     }
 
     bool wait() {
-      //Serial.println(String(millis()) + " " + String(start) + " " + String(time_to_wait));
       return millis() < (start + time_to_wait);
     }
 

@@ -11,7 +11,6 @@ class SoundReactor {
   const int threshold_negative_hysteresis[3] = {3, 0, 20};
   const int threshold_positive_hysteresis[3] = {0, 5, 20};
   int currentlevel;
-  //long currentlevel_entry;
   const int level_minimum_duration_positive[4] = {0, 10, 10, 10};
   const int level_minimum_duration_negative[4] = {0, 30, 30, 10};
   int prospective_level;
@@ -21,20 +20,17 @@ class SoundReactor {
     audiolevel = 70;
     lastvolume = 0;
     currentlevel = 1;
-    //currentlevel_entry = millis();
   }
 
   void update(float target) {
     lastvolume = target;
     int error = target - audiolevel;
     if(error>0) {
-      //audiolevel += Kp_p * error;
       audiolevel += pow(Kp_p, 1.0-5.0/max(2.5, audiolevel - 30)) * error;
     } else {
       audiolevel += Kp_n * error;
     }
         
-    //Serial.println(String(audiolevel) + " " + String(error) + " " + String(1.0-5.0/(audiolevel - 30)) + " " + String(pow(Kp_p, 1.0-5.0/(audiolevel - 30))));
     updateLevel();
   }
 

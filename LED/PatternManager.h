@@ -97,7 +97,6 @@ class PatternManager {
         getPattern(currentpattern)->update(leds);
         return;
       }
-      //Serial.println(String(currentpattern) + " " + String(nextpattern) + " " + String(transition_status));
       if (nextpattern) {
         if (transition_status == 0) {
           getPattern(nextpattern)->setup();

@@ -124,7 +124,6 @@ class FallingStar: public Pattern {
         }
         int fall = FALL_DURATION * ornament_max_brightness[i] / 255;
         int fade = FADE_DURATION * ornament_max_brightness[i] / 255;
-        //float fade_rate = pow(255, 1.0 / fade);
 
         int animationframes = fall + fade;
         int ornamentframe = framenumber - ornament_startframe[i];
@@ -134,13 +133,11 @@ class FallingStar: public Pattern {
           randomise(i);
           continue;
         }
-        //int fade_frame = max(0, ornamentframe - fall);
         for (int j = 0; j < min(ornamentframe, fall) - 1; j++) {
           int height = ornament_height[i] - j;
           unsigned int bright = sin8((map(j, 0, fall - 1, 0, 255) + 192) % 256);
           bright = bright * ornament_max_brightness[i] / 255;
           int fade_led = max(0, fade - ornamentframe + j + 1);
-          //bright = bright * pow(fade_rate, fade - fade_led) / 255;
           bright = bright * fade_led / fade;
           setLed(ledbuffer, ornament_row[i], height, CHSV(ornament_hue[i], ornament_sat[i], bright));
         }
@@ -196,7 +193,6 @@ class Chase2: public Pattern {
 
     virtual void update(CRGB ledbuffer[]) {
       Pattern::update(ledbuffer);
-      //ledbuffer[ledid(position % ROWS, position / ROWS)] = CRGB::Black;
       position = (position + 1) % int(NUM_LEDS);
       ledbuffer[ledid(position % ROWS, position / ROWS)] = CRGB::White;
     }
@@ -279,7 +275,6 @@ class ChristmasRadio: public Pattern {
 
     virtual void update(CRGB ledbuffer[]) {
       Pattern::update(ledbuffer);
-      //Add Here
       CRGB RING_COLOUR;
       for (int RING = 0; RING < RING_NUMBER; RING++) {
         if (RING % 2 == 0) {
@@ -371,7 +366,6 @@ class Fire: public Pattern {
       if ( random8(255) < Sparking ) {
         int y = random8(7);
         heat[row][y] = heat[row][y] + random8(160, 255);
-        //heat[y] = random(160,255);
       }
 
       // Step 4.  Convert heat to LED colors
@@ -479,13 +473,12 @@ class Loudness: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
-      int level = soundlevel.getLastVolume() - 50; //soundlevel.getAudioLevel();
-      //Serial.println(level);
+      int level = soundlevel.getLastVolume() - 50;
       history.push(level);
       for (int i = 0; i < LEDS_PER_ROW; i++) {
         level = history.getVal(LEDS_PER_ROW - i);
         int bright = map16(constrain(level, -20, 100), -20, 100, 0, 255);
-        int sat = 255-bright;//map16(constrain(level, -20, 100), -20, 100, 255, 0);
+        int sat = 255-bright;
         int hue = map16(constrain(level, -20, 50), -20, 50, 255, 160);
         CRGB colour = CHSV(hue, sat, bright);
         for (int j = 0; j < ROWS; j++) {
@@ -560,23 +553,11 @@ class Diagonal: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
-      //Pattern::update(ledbuffer);
-      /*
-      for(int l = 0; l<LEDS_PER_ROW; l++) {
-        //ledbuffer[ledid(row, (framenumber + abs(ROWS/2-row)*3) % LEDS_PER_ROW)]=CRGB::White;
-        CRGB colour = CHSV(map16(l, 0, LEDS_PER_ROW, 0, 255), 255, 64);
-        for(int row = 0; row<ROWS; row++) {
-          //ledbuffer[ledid(row, (framenumber + abs(ROWS/2-row)*3 + l) % LEDS_PER_ROW)]=colour;
-          ledbuffer[ledid(row, (row + l + framenumber/2) % LEDS_PER_ROW)]=colour;
-        }
-      }*/
       int c = 255 * 2 / ROWS;
       int v1 =  255 - (framenumber % 64) * 4;
       for(int l = 0; l<LEDS_PER_ROW; l++) {
         int v2 = l*ROWS/2;
         for(int row = 0; row<ROWS; row++) {
-          //ledbuffer[ledid(row, l)]=CHSV((255 * l / 2 / LEDS_PER_ROW + row * LEDS_PER_ROW/ROWS + framenumber*8) % 255, 255, 64);
-          //ledbuffer[ledid(row, l)]=CHSV((255 * row / ROWS + l*ROWS/2 + framenumber * 4) % 255, 255, 48);
           int v3 = row * c + v2 + v1;
           if(v3>256) v3 = v3 % 256;
           ledbuffer[ledid(row, l)]=CHSV(v3, 255, 64);
@@ -622,7 +603,6 @@ class Fireworks: public Pattern {
           unsigned int height = 256*(SHOOT-frame)/SHOOT;
           height *= height;
           height = (65536 - height) / 256 * LEDS_PER_ROW / 256;
-          //Serial.println(String(frame) + " " + String(height));
           CHSV c = shootcolour[i];
           ledbuffer[ledidC(row[i], height)]=c;
           c.value = 128;
@@ -638,11 +618,9 @@ class Fireworks: public Pattern {
               int o_x = row[i];
               int o_y = LEDS_PER_ROW - 1;
               if((x*x + y*y)>circlesize*circlesize) continue;
-              //Serial.println(String(o_x + x) + " " + String(o_y + y) + " " + String(ledidC(o_x + x, o_y + y)));
               ledbuffer[ledidC(o_x + x, o_y + y)]=CRGB::White;
             }
           }
-          //Serial.println(String(frame));
         } else if(frame < SHOOT + EXPLODE + 8) {
           frame-=SHOOT;
           int circlesize = (frame+1);
@@ -664,7 +642,6 @@ class Fireworks: public Pattern {
           int circlesize = (frame+1);
           if(circlesize>6) circlesize=4;
           int height = LEDS_PER_ROW - (LEDS_PER_ROW-1) * frame / FALL;
-          //ledbuffer[ledidC(row[i], height)]=CRGB::White;
           for(int x = -circlesize; x<circlesize; x++) {
             for(int y = -circlesize; y<circlesize; y++) {
               CHSV c1 = burstcolour[i];
