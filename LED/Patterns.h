@@ -36,19 +36,26 @@ class Blank: public Pattern {
  */
 class Ornaments: public Pattern {
 
+    //the number of ornaments
     const static int NO_ORNAMENTS = 32;
+    //how long an ornament should be displayed, from off, fading in, and fading out
     const static int BLINK_DURATION = 120; //frames
     const CHSV background_colour = CHSV( 96, 255, 64);
 
+    //the colour of each ornament
     CHSV ornament_colour[NO_ORNAMENTS];
+    //led position of each ornament
     int ornament_position[NO_ORNAMENTS];
+    //a frame counter used to determine the brightness of each ornament
     int ornament_brightness[NO_ORNAMENTS];
+    //RGB representation of background colour
     CRGB background_colour_rgb = background_colour;
 
   public:
     Ornaments() {
     }
 
+    //Return true if an ornament already exists at t.
     bool testposition(int t) {
       for (int i = 0; i < NO_ORNAMENTS; i++) {
         if (ornament_position[i] == t) return true;
@@ -56,6 +63,7 @@ class Ornaments: public Pattern {
       return false;
     }
 
+    //Randomise values for a new ornament.
     void randomise(int i) {
       ornament_colour[i] = CHSV( random8(), 255, 64);
       int pos;
@@ -63,6 +71,7 @@ class Ornaments: public Pattern {
       ornament_position[i] = pos;
     }
 
+    //randomise all ornaments. Setting brightness negative causes a delay before initial display of ornaments
     virtual void setup() {
       for (int i = 0; i < NO_ORNAMENTS; i++) {
         ornament_brightness[i] = -random(BLINK_DURATION);
@@ -71,21 +80,29 @@ class Ornaments: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
+      //set background
       for (int i = 0; i < NUM_LEDS; i++) {
         ledbuffer[i] = background_colour_rgb;
       }
       for (int i = 0; i < NO_ORNAMENTS; i++) {
+        //if brightness negative, dont show it yet
         if (ornament_brightness[i] < 0) {
           ornament_brightness[i] += 1;
           continue;
         }
+        //increment brightness
         ornament_brightness[i] = (ornament_brightness[i] + 1) % BLINK_DURATION;
+        //use a sin curve to transition ornament brightness
         int transition = sin8((map(ornament_brightness[i], 0, BLINK_DURATION - 1, 0, 255) + 192) % 256);
         CHSV b = background_colour;
+        //fade led from background colour
         ornament_colour[i].value = transition;
+        //generate ornament colour, with appropriate brightness
         b.value = (b.value * 255 - b.value * transition) / 256;
+        //fade the two together
         ledbuffer[ornament_position[i]] = b + ornament_colour[i];
         if (ornament_brightness[i] == 0) {
+          //if brightness has been reset, generate at a new location
           randomise(i);
         }
       }
@@ -98,17 +115,28 @@ class Ornaments: public Pattern {
  */
 class FallingStar: public Pattern {
 
+    //The number of shooting starts scheduled at any time
     const static int NO_ORNAMENTS = 10;
+    //possible number of frames to wait between shoots
     const static int DELAY = 30 * 5; //frames
+    //how many frames the star should spend falling
     const static int FALL_DURATION = 20; //frames
+    //how long the streak should last
     const static int FADE_DURATION = 30; //frames
+    //the minimum start height of each star
     const static int MIN_HEIGHT = 10;
 
+    //the start frame for the star
     int ornament_startframe[NO_ORNAMENTS];
+    //the row to display the star on
     int ornament_row[NO_ORNAMENTS];
+    //the start height 
     int ornament_height[NO_ORNAMENTS];
+    //fade the brightness up to this value
     int ornament_max_brightness[NO_ORNAMENTS];
+    //star colour
     int ornament_hue[NO_ORNAMENTS];
+    //star saturation
     int ornament_sat[NO_ORNAMENTS];
 
   public:
@@ -116,12 +144,18 @@ class FallingStar: public Pattern {
     }
 
     void randomise(int i) {
+      //set star to shoot some time in the future
       ornament_startframe[i] = framenumber + random(DELAY);
+      //on a random row
       ornament_row[i] = random(ROWS);
+      //at a random height
       ornament_height[i] = MIN_HEIGHT + random(LEDS_PER_ROW);
+      //maximum brightness
       ornament_max_brightness[i] = 128 + random8(127);
+      //red-yellow-orange colour
       ornament_hue[i] = random8(64);
-      ornament_sat[i] = random8(128);
+      //mostly saturated
+      ornament_sat[i] = 128 + random8(127);
     }
 
     virtual void setup() {
@@ -131,39 +165,53 @@ class FallingStar: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
+      //blank canvas
       Pattern::update(ledbuffer);
       for (int i = 0; i < NO_ORNAMENTS; i++) {
+        //if start time in the future, dont display anything
         if (ornament_startframe[i] > framenumber) {
           continue;
         }
+        //for this star, how much time should it spend falling. Dependant on maxumum brighness
         int fall = FALL_DURATION * ornament_max_brightness[i] / 255;
+        //for this star, how much time should it spend fading
         int fade = FADE_DURATION * ornament_max_brightness[i] / 255;
 
+        //total number of frames
         int animationframes = fall + fade;
+        //which frame are we up to
         int ornamentframe = framenumber - ornament_startframe[i];
         int framesremaining = animationframes - ornamentframe;
 
         if (!(framesremaining > 0)) {
+          //Were done, reset star
           randomise(i);
           continue;
         }
+        //draw the tail. we count pixels from 0 to how many frames have passed (up to fall frames)
         for (int j = 0; j < min(ornamentframe, fall) - 1; j++) {
           int height = ornament_height[i] - j;
+          //brightess of tail starts as a sin curve
           unsigned int bright = sin8((map(j, 0, fall - 1, 0, 255) + 192) % 256);
+          //dim the tail depending on max brightness
           bright = bright * ornament_max_brightness[i] / 255;
+          //we want to fade the led depending on how long it has been displayed
           int fade_led = max(0, fade - ornamentframe + j + 1);
           bright = bright * fade_led / fade;
           setLed(ledbuffer, ornament_row[i], height, CHSV(ornament_hue[i], ornament_sat[i], bright));
         }
         if (ornamentframe < fall) {
+          //display the star, its brightness determined by a sin curve and the max brightness
           int height = ornament_height[i] - ornamentframe;
           unsigned int bright = sin8((map(ornamentframe, 0, fall - 1, 0, 255) + 192) % 256);
           bright = bright * ornament_max_brightness[i] / 255;
+          //the star has lower saturation, making it whiter and brighter
           setLed(ledbuffer, ornament_row[i], height, CHSV(ornament_hue[i], ornament_sat[i] / 2, bright));
         }
       }
     }
     void setLed(CRGB ledbuffer[], int row, int height, CRGB colour) {
+      //we dont display anything if its height is out of range
       if (!(row >= 0 && row < ROWS && height >= 0 & height < LEDS_PER_ROW)) return;
       ledbuffer[ledid(row, height)] = colour;
     }
@@ -224,7 +272,9 @@ class Chase2: public Pattern {
  */
 class FlashRow: public Pattern {
 
+    //the number of frames before the strip moves
     const int FRAMES_CYCLE = 12;
+    //the number of frames in the cycle the strip is on for
     const int FRAMES_ON = 12;
     int row;
     CHSV colour;
@@ -256,7 +306,9 @@ class FlashRow: public Pattern {
  */
 class FlashRing: public Pattern {
 
+    //the number of frames before the ring moves
     const int FRAMES_CYCLE = 12;
+    //the number of frames in the cycle the ring is on for
     const int FRAMES_ON = 12;
     int row;
     CHSV colour;
@@ -288,8 +340,11 @@ class FlashRing: public Pattern {
  */
 class ChristmasRadio: public Pattern {
 
+    //how many rings
     const int RING_NUMBER = 5;
+    // distance between each ring
     const int RING_SPACER = 2;
+    //number of frames each state is displayed for before moving the rings
     const int RING_SPEED = 2;
 
     int ROW_COUNT = 0;
@@ -337,6 +392,7 @@ class Eye: public Pattern {
       int a = 255;
       int b = 96;
       int c = 72;
+      //vary the brightness
       int transition = sin8((map(framenumber % 120, 0, 120 - 1, 0, 255) + 192) % 256);
       transition = map(transition, 0, 255, 192, 255);
       a = a * transition / 255;
@@ -514,13 +570,17 @@ class Loudness: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
-      int level = soundlevel.getLastVolume() - 50;
+      int level = soundlevel.getLastVolume();
       history.push(level);
       for (int i = 0; i < LEDS_PER_ROW; i++) {
+        //for each ring we get a historic volume level
         level = history.getVal(LEDS_PER_ROW - i);
-        int bright = map16(constrain(level, -20, 100), -20, 100, 0, 255);
+        //set brightness based on volume
+        int bright = map16(constrain(level, 30, 150), 30, 150, 0, 255);
+        //saturation varies inversely to brightness. louder is whiter and brighter
         int sat = 255-bright;
-        int hue = map16(constrain(level, -20, 50), -20, 50, 255, 160);
+        //colour varies from red to blue based on loudness
+        int hue = map16(constrain(level, 30, 100), 30, 100, 255, 160);
         CRGB colour = CHSV(hue, sat, bright);
         for (int j = 0; j < ROWS; j++) {
           ledbuffer[ledid(j, i)] = colour;
@@ -534,6 +594,7 @@ class Loudness: public Pattern {
  */
 class Sparkle: public Pattern {
 
+    //number of leds lit at any one time
     const int SPARKLES = 10;
 
   public:
@@ -546,6 +607,7 @@ class Sparkle: public Pattern {
     virtual void update(CRGB ledbuffer[]) {
       Pattern::update(ledbuffer);
       for(int i=0; i<SPARKLES; i++) {
+        //1/4 leds are white, the remaining are coloured
         if(random8()<64) {
           ledbuffer[random(NUM_LEDS)]=CRGB::White;
         } else {
@@ -557,6 +619,7 @@ class Sparkle: public Pattern {
 
 /*
  * shows a white band around the middle of the tree. The band moves up and down using subpixel rendering to gradually move up and down.
+ * Based on https://plus.google.com/112916219338292742137/posts/2VYNQgD38Pw | http://pastebin.com/yAgKs0Ay
  */
 class Wiggle: public Pattern {
 
@@ -571,17 +634,19 @@ class Wiggle: public Pattern {
 
     virtual void update(CRGB ledbuffer[]) {
       Pattern::update(ledbuffer);
-      int baseheight = 16 * (LEDS_PER_ROW)/2 - 255/4;
-      int height = baseheight + sin8(framenumber*8)/2;
+      int height = 16 * (LEDS_PER_ROW)/2 - 255/4;
+      height = height + sin8(framenumber*8)/2;
+      //height of start of band
       int pos = height/16;
+      //how bright the last ring should be
       int fractional = height & 0x0F;
       CRGB colour;
       for(int i=0; i<=WIDTH; i++) {
-        if(i==0) {
+        if(i==0) {//first ring
           colour = CHSV( 0, 0, 255 - (fractional * 16));
-        } else if(i==WIDTH) {
+        } else if(i==WIDTH) {//last ring
           colour = CHSV( 0, 0, fractional * 16);
-        } else {
+        } else {//middle rings
           colour = CHSV( 0, 0, 255);
         }
         for(int row=0; row<ROWS; row++)
@@ -603,11 +668,16 @@ class Diagonal: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
+      //we calculate the colour of each led
+      //constant for later calculation
       int c = 255 * 2 / ROWS;
+      //start by varying all colours by frame
       int v1 =  255 - (framenumber % 64) * 4;
       for(int l = 0; l<LEDS_PER_ROW; l++) {
+        //vary the colour depending on height
         int v2 = l*ROWS/2;
         for(int row = 0; row<ROWS; row++) {
+          //vary colour based on row
           int v3 = row * c + v2 + v1;
           if(v3>256) v3 = v3 % 256;
           ledbuffer[ledid(row, l)]=CHSV(v3, 255, 64);
@@ -622,13 +692,22 @@ class Diagonal: public Pattern {
  */
 class Fireworks: public Pattern {
 
+  //how many fireworks to have queued at any time
   static const int NO_FIREWORKS = 6;
+  //how many frames the firework should shoot for
   const int SHOOT = 40;
+  //how many frames the firework should explode for
   const int EXPLODE = 3;
+  //how long the firework should take to fall
   const int FALL = 60;
+
+  //start frame for each forework
   long startframe[NO_FIREWORKS];
+  //row firework starts from
   int row[NO_FIREWORKS];
+  //colour of rocket
   CHSV shootcolour[NO_FIREWORKS];
+  //colour of burst
   CHSV burstcolour[NO_FIREWORKS];
 
   public:
@@ -636,8 +715,10 @@ class Fireworks: public Pattern {
     }
 
     virtual void randomise(int i) {
+      //start time is up to 5 seconds in the future
       startframe[i] = framenumber + random(30*5);
       row[i] = random(ROWS);
+      //rocket is red/orange/yellow
       shootcolour[i] = CHSV(random8(64), 255-random8(64), 255);
       burstcolour[i] = CHSV(random8(), 255-random8(64), 255);
     }
@@ -651,61 +732,81 @@ class Fireworks: public Pattern {
     virtual void update(CRGB ledbuffer[]) {
       Pattern::update(ledbuffer);
       for(int i = 0; i<NO_FIREWORKS; i++) {
+        //dont display if firework hasn't launched yet
         if(framenumber<startframe[i]) continue;
         int frame = framenumber - startframe[i];
-        if(frame < SHOOT) {
+        if(frame < SHOOT) { // rocket phase
+          //calculate height with an inverse parabola. y = 1 - x^2, from x=-1..1, and y is scaled to tree height
           unsigned int height = 256*(SHOOT-frame)/SHOOT;
           height *= height;
           height = (65536 - height) / 256 * LEDS_PER_ROW / 256;
           CHSV c = shootcolour[i];
+          //draw a bright dot
           ledbuffer[ledidC(row[i], height)]=c;
+          //draw two leds for a tail, each half the brightness of the last
           c.value = 128;
           ledbuffer[ledidC(row[i], height-1)]=c;
           c.value = 64;
           ledbuffer[ledidC(row[i], height-2)]=c;
+          //if we have already reached the top of the tree, jump ahead
           if(height==LEDS_PER_ROW-1) startframe[i] = framenumber - SHOOT - 1;
-        } else if(frame < SHOOT + EXPLODE) {
+        } else if(frame < SHOOT + EXPLODE) { // initial explosion
           frame-=SHOOT;
+          //we draw a white circle if increasing size
           int circlesize = (frame+1);
           for(int x = -circlesize; x<circlesize; x++) {
             for(int y = -circlesize; y<=0; y++) {
+              //if we are outside the circle, do nothing
+              if((x*x + y*y)>circlesize*circlesize) continue;
+              //circle centre
               int o_x = row[i];
               int o_y = LEDS_PER_ROW - 1;
-              if((x*x + y*y)>circlesize*circlesize) continue;
               ledbuffer[ledidC(o_x + x, o_y + y)]=CRGB::White;
             }
           }
-        } else if(frame < SHOOT + EXPLODE + 8) {
+        } else if(frame < SHOOT + EXPLODE + 8) {//explosion
           frame-=SHOOT;
+          //falling shows a circle of randomly lit leds
           int circlesize = (frame+1);
-          if(circlesize>6) circlesize=4;
+          if(circlesize>4) circlesize=4;
           int height = LEDS_PER_ROW - (LEDS_PER_ROW-1) * frame / FALL;
           for(int x = -circlesize; x<circlesize; x++) {
             for(int y = -circlesize; y<circlesize; y++) {
+              //if we are outside the circle, do nothing
+              if((x*x + y*y)>(frame+1)*(frame+1)) continue;
+              //determine led colour
               CHSV c1 = burstcolour[i];
+              //becomes dimmer as circle expands
               c1.value = 256>>(circlesize/2);
+              //and is a random brightness
               c1.value = random8(c1.value*2);
               int o_x = row[i];
               int o_y = height;
-              if((x*x + y*y)>(frame+1)*(frame+1)) continue;
               ledbuffer[ledidC(o_x + x, o_y + y)]=c1;
             }
           }
         } else if(frame < SHOOT + EXPLODE + FALL) {
           frame-=SHOOT;
+          //falling shows a circle of randomly lit leds, with white sparkles
           int circlesize = (frame+1);
-          if(circlesize>6) circlesize=4;
+          if(circlesize>4) circlesize=4;
           int height = LEDS_PER_ROW - (LEDS_PER_ROW-1) * frame / FALL;
           for(int x = -circlesize; x<circlesize; x++) {
             for(int y = -circlesize; y<circlesize; y++) {
+              //if we are outside the circle, do nothing
+              if((x*x + y*y)>circlesize*circlesize) continue;
+              //determine led colour
               CHSV c1 = burstcolour[i];
+              //not too bright
               c1.value = 64;
+              //randomise brightness
               c1.value = random8(c1.value*2);
+              //1 in 16 times we add a white sparkle
               if(random8()>240) c1 = CHSV(0, 0, 255);
+              //and we fade out the lower we get
               c1.value = c1.value * height / LEDS_PER_ROW ;
               int o_x = row[i];
               int o_y = height;
-              if((x*x + y*y)>circlesize*circlesize) continue;
               ledbuffer[ledidC(o_x + x, o_y + y)]=c1;
             }
           }
