@@ -81,10 +81,11 @@ void loop() {
   if(DEBUG) framestatus.update();
 
   //peak indicator
-  soundpeak.update();
+  if(!DEMO) soundpeak.update();
 
   //set overall brightness baseed on ambient light levels
-  FastLED.setBrightness(map(constrain(lightlevel, 5, 40), 2, 40, 0, 255));
+  if(!DEMO)
+    FastLED.setBrightness(map(constrain(lightlevel, 5, 40), 2, 40, 0, 255));
   //Display pattern
   FastLED.show();
   //Send alert if calculations took too long

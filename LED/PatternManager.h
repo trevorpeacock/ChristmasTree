@@ -1,4 +1,5 @@
 #include "Patterns.h"
+#define DEMO false
 
 //Lists all available patterns
 namespace PATTERNS {
@@ -176,6 +177,40 @@ class LevelManager {
     }
 
     void update() {
+      if(DEMO) {
+        const int frames_per_pattern = 30*15;
+        if(framenumber==1) framenumber = frames_per_pattern - 5*30;
+        long frame = framenumber-1;
+        if(framenumber%frames_per_pattern==0) {
+          int patternid = (framenumber/ frames_per_pattern) - 1;
+          PATTERNS::PATTERN pattern;
+          switch (patternid % 9) {
+            case -1:
+              pattern = PATTERNS::BLANK; break;
+            case 0:
+              pattern = PATTERNS::ORNAMENTS; break;
+            case 1:
+              pattern = PATTERNS::FALLINGSTAR; break;
+            case 2:
+              pattern = PATTERNS::DIAGONAL; break;
+            case 3:
+              pattern = PATTERNS::RADIO; break;
+            case 4:
+              pattern = PATTERNS::FIRE; break;
+            case 5:
+              pattern = PATTERNS::CHASE1; break;
+            case 6:
+              pattern = PATTERNS::BOUNCINGBALL; break;
+            case 7:
+              pattern = PATTERNS::SPARKLE; break;
+            case 8:
+              pattern = PATTERNS::FIREWORKS; break;
+          };
+          patternmanager.transition(pattern);
+        }
+        patternmanager.update();
+        return;
+      }
       //patterns are displayed for a defined amount of time, each pattern in the patternset displayed in turn
       //check if its time to change pattern within the patternset
       if(framessincelevelchange % int(FRAMES_PER_PATTERN)==0) {
