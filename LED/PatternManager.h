@@ -1,5 +1,6 @@
 #include "Patterns.h"
 
+//Lists all available patterns
 namespace PATTERNS {
   enum PATTERN {
     BLANK,
@@ -21,6 +22,7 @@ namespace PATTERNS {
   };
 };
 
+//Initialise all patterns used
 Blank blank = Blank();
 Ornaments ornaments = Ornaments();
 Chase1 chase1 = Chase1();
@@ -38,6 +40,8 @@ Wiggle wiggle = Wiggle();
 Diagonal diagonal = Diagonal();
 Fireworks fireworks = Fireworks();
 
+// given a pattern id, return that model
+// eg. getPattern(PATTERNS::BLANK) returns blank object.
 Pattern* getPattern(int p) {
   switch (p) {
     case PATTERNS::BLANK:
@@ -131,12 +135,18 @@ class PatternManager {
 
 };
 
+
+//Manages which pattern is displayed, specified by newlevel(int)
 class LevelManager {
 
+    //how long (in frames) each pattern should be displayed
     const int FRAMES_PER_PATTERN = 30*60;
     PatternManager patternmanager = PatternManager();
+    //which set of patterns are in use. Corresponds to audio level.
     int patternset;
+    //frame counter since level was changed
     int framessincelevelchange;
+    //current pattern in use
     PATTERNS::PATTERN currentpattern;
 
   public: LevelManager() {
@@ -144,12 +154,16 @@ class LevelManager {
 
 
     void setup() {
+      //initialise pattern manager
       patternmanager.setup();
+      //default to pattern set 1
       patternset = 1;
       framessincelevelchange = 0;
     }
 
     void update() {
+      //patterns are displayed for a defined amount of time, each pattern in the patternset displayed in turn
+      //check if its time to change pattern within the patternset
       if(framessincelevelchange % int(FRAMES_PER_PATTERN)==0) {
         transition();
       }
@@ -158,7 +172,9 @@ class LevelManager {
     }
 
     void transition() {
+      //determine which pattern should be in use
       PATTERNS::PATTERN newpattern = getnewpattern();
+      //if its different to the current pattern, update the patternmanager
       if(newpattern!=currentpattern) {
         patternmanager.transition(newpattern);
         currentpattern=newpattern;
@@ -166,6 +182,7 @@ class LevelManager {
     }
     
     PATTERNS::PATTERN getnewpattern() {
+      //each pattern is plated depending on how long its been since levelchange
       int patterncount = framessincelevelchange / FRAMES_PER_PATTERN;
       switch (patternset) {
         case 0:
@@ -202,6 +219,7 @@ class LevelManager {
       }
     }
 
+    //use new patternset
     void newlevel(int level) {
       patternset = level;
       framessincelevelchange = 0;

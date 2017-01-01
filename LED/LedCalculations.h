@@ -1,4 +1,6 @@
 
+//returns the ID of the led on the given row, at the give height.
+//Will "wrap" out of range leds between rows and heights
 int ledid(int row, int height) {
   while(row<0) row+=ROWS;
   if(row>=int(ROWS))
@@ -16,6 +18,8 @@ int ledid(int row, int height) {
 }
 
 
+//returns the ID of the led on the given row, at the give height.
+//Will "wrap" out of rows, but constrains height to be within range
 int ledidC(int row, int height) {
   while(row<0) row+=ROWS;
   if(row>=int(ROWS))

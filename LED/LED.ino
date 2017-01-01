@@ -63,7 +63,7 @@ void loop() {
   audiolevel = audiolevel | Serial3.read();
 
   //update sound level model
-  soundlevel.update(r);
+  soundlevel.update(audiolevel);
   int level = soundlevel.getLevel();
 
   if(lastlevel != soundlevel.getLevel()) {

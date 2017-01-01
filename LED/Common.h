@@ -2,10 +2,15 @@
 #define LEDS_PER_ROW 30
 #define NUM_LEDS ROWS*LEDS_PER_ROW
 
+//The main framebuffer. Managed by PatternManager
 CRGB leds[NUM_LEDS];
 
+//global framenumber
 long framenumber = 0;
 
+/*
+ * WaitFor(int) starts a timer. wait() returns false until the specified number of milliseconds expires.
+ */
 class WaitFor {
     unsigned long start;
     int time_to_wait;
@@ -25,6 +30,9 @@ class WaitFor {
     }
 };
 
+/*
+ * SlidingWindow(int) maintains a sliding window of defined size. push(int) adds a value. getVal(0..n) gets a value from the window.
+ */
 class SlidingWindow {
 
   int *window;
@@ -56,7 +64,9 @@ class SlidingWindow {
 
 };
 
+//Copy of the arduino map function, using int rather than long.
 int map16(int x, int in_min, int in_max, int out_min, int out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+

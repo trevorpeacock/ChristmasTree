@@ -2,6 +2,9 @@
 #include "Audio.h"
 #include "LedCalculations.h"
 
+/*
+ * displays a bright band of white at the top and bottom if sound peaks
+ */
 class SoundPeak {
   public: SoundPeak() {
   }
@@ -10,6 +13,7 @@ class SoundPeak {
   }
 
   void update() {
+    //a sound peak occurs if current volume is twice the average volume
     if(soundlevel.getLastVolume()>soundlevel.getAudioLevel()*2) {
       for(int i = 0; i<ROWS; i++) {
         leds[LEDS_PER_ROW * i]=CRGB::White;
@@ -20,6 +24,9 @@ class SoundPeak {
 
 };
 
+/*
+ * displays a number of red dots representing the audiolevel
+ */
 class SoundLevelStatus {
   public: SoundLevelStatus() {
   }
@@ -35,6 +42,9 @@ class SoundLevelStatus {
 
 };
 
+/*
+ * blinks a led on or off each frame
+ */
 class FrameStatus {
   public: FrameStatus() {
   }
