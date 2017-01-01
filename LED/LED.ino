@@ -91,10 +91,6 @@ void loop() {
   //Send alert if calculations took too long
   if(t.timeRemaining()<0)
     Serial.println("CYCLE TOOK " + String(-t.timeRemaining()) + "ms TOO LONG");
-  //If we have any time left, refresh leds. Probably never happens.
-  while(t.timeRemaining()>16) {
-    FastLED.show();
-  }
   //Wait out the rest of the frame
   while(t.wait()) {
   }

@@ -20,11 +20,11 @@ class SoundReactor {
   //the number of levels, 0..n
   const int maxlevel = 2;
   //the audio level thresholds seperating levels
-  const int thresholds[2] = {/*0<>1*/ 43, /*1<>2*/ 70};
+  const int thresholds[2] = {/*0<>1*/ 45, /*1<>2*/ 70};
   //histerisis for moving from lower to higher levels
-  const int threshold_negative_hysteresis[2] = {/*1->0*/ 3, /*2->1*/ 0};
+  const int threshold_negative_hysteresis[2] = {/*1->0*/ 0, /*2->1*/ 0};
   //histerisis for moving from higher to lower levels
-  const int threshold_positive_hysteresis[2] = {/*0->1*/ 0, /*1->2*/ 5};
+  const int threshold_positive_hysteresis[2] = {/*0->1*/ 5, /*1->2*/ 5};
   //how long (seconds) must a new level be sustationed to transition
   const int level_minimum_duration_negative[2] = {/*1->0*/ 30, /*2->1*/ 30};
   const int level_minimum_duration_positive[2] = {/*0->1*/ 0, /*1->2*/10};
