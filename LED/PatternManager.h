@@ -179,13 +179,16 @@ class LevelManager {
     void update() {
       if(DEMO) {
         const int frames_per_pattern = 30*15;
+        //force first frame to be 5 seconds before first pattern (0th pattern is blank)
         if(framenumber==1) framenumber = frames_per_pattern - 5*30;
-        long frame = framenumber-1;
+        //every frames_per_pattern frames we trigger a new pattern
         if(framenumber%frames_per_pattern==0) {
           int patternid = (framenumber/ frames_per_pattern) - 1;
           PATTERNS::PATTERN pattern;
+          //predefined list of patterns
           switch (patternid % 9) {
             case -1:
+              //demo starts with 5 sec blank before fading in first pattern
               pattern = PATTERNS::BLANK; break;
             case 0:
               pattern = PATTERNS::ORNAMENTS; break;
@@ -209,6 +212,7 @@ class LevelManager {
           patternmanager.transition(pattern);
         }
         patternmanager.update();
+        //dont run normal code during demo
         return;
       }
       //patterns are displayed for a defined amount of time, each pattern in the patternset displayed in turn
