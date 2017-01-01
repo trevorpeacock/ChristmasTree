@@ -80,10 +80,14 @@ Pattern* getPattern(int p) {
 }
 
 class PatternManager {
+    //Number of frames during which both patterns should be cross-faded
     const int TRANSITION_FRAMES = 75;
 
+    //Pattern currently being used
     int currentpattern = 0;
+    //the next pattern to use, or 0 if not in transition
     int nextpattern = 0;
+    //frame counter for the transition period
     int transition_status = 0;
     CRGB spare[NUM_LEDS];
 
@@ -95,32 +99,41 @@ class PatternManager {
     }
 
     void update() {
+      //Debug/testing. Manually set single pattern to use.
       if (false) {
         currentpattern = PATTERNS::DIAGONAL;
         if(framenumber==1) getPattern(currentpattern)->setup();
         getPattern(currentpattern)->update(leds);
         return;
       }
+      //Check if we are transitioning
       if (nextpattern) {
         if (transition_status == 0) {
+          //Setup pattern on first frame
           getPattern(nextpattern)->setup();
         }
         if (transition_status < TRANSITION_FRAMES) {
           transition_status ++;
         } else {
+          //Transition complete
           currentpattern = nextpattern;
           nextpattern = 0;
           transition_status = 0;
         }
       }
+      //Run pattern
       getPattern(currentpattern)->update(leds);
+      //If we are transitioning crossfade the new pattern
       if (nextpattern) {
+        //Fade the current framebuffer
         int fade_percent = 255 * transition_status / TRANSITION_FRAMES;
         fade_percent = sin8((fade_percent / 2 + 64) % 256);
         for (int i = 0; i < NUM_LEDS; i++) {
           leds[i].nscale8(fade_percent);
         }
+        //Call new patter, writing into a spare buffer
         getPattern(nextpattern)->update(spare);
+        //Mix pattern into main buffer
         for (int i = 0; i < NUM_LEDS; i++) {
           spare[i].nscale8(255 - fade_percent);
           leds[i] += spare[i];
@@ -128,6 +141,7 @@ class PatternManager {
       }
     }
 
+    //Start transition into new pattern
     void transition(int pattern) {
       nextpattern = pattern;
       transition_status = 0;

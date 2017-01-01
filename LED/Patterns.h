@@ -1,10 +1,14 @@
 #include "UtilityPatterns.h"
 
+/*
+ * base class, by default blanks all LEDs
+ */
 class Pattern {
   public:
+    //This is called everytime the pattern starts to be used
     virtual void setup() {
     }
-
+    //Called every frame. Pattern should be supplied to provided buffer
     virtual void update(CRGB ledbuffer[]) {
       for (int i = 0; i < NUM_LEDS; i++) {
         ledbuffer[i] = CRGB::Black;
@@ -12,6 +16,9 @@ class Pattern {
     }
 };
 
+/*
+ * Blank (black) pattern
+ */
 class Blank: public Pattern {
   public: Blank() {
     }
@@ -24,6 +31,9 @@ class Blank: public Pattern {
     }
 };
 
+/*
+ * displays a "Christmas Tree", a green background, with slowly twinkling "ornaments"
+ */
 class Ornaments: public Pattern {
 
     const static int NO_ORNAMENTS = 32;
@@ -82,6 +92,10 @@ class Ornaments: public Pattern {
     }
 };
 
+/*
+ * Shows random shooting stars, moving vertically down the tree, fading in then out again.
+ * A fading tail streaks behind the star.
+ */
 class FallingStar: public Pattern {
 
     const static int NO_ORNAMENTS = 10;
@@ -156,6 +170,9 @@ class FallingStar: public Pattern {
 };
 
 
+/*
+ * red green and blue dots chace alternately up and down each strip.
+ */
 class Chase1: public Pattern {
 
     int position;
@@ -180,6 +197,9 @@ class Chase1: public Pattern {
 
 };
 
+/*
+ * single led chases around the bottom row, then around the second, and so on up the tree.
+ */
 class Chase2: public Pattern {
 
     int position;
@@ -199,6 +219,9 @@ class Chase2: public Pattern {
 
 };
 
+/*
+ * randomly light up a single vertical "row"
+ */
 class FlashRow: public Pattern {
 
     const int FRAMES_CYCLE = 12;
@@ -228,6 +251,9 @@ class FlashRow: public Pattern {
 
 };
 
+/*
+ * randomly light up a single ring around the tree
+ */
 class FlashRing: public Pattern {
 
     const int FRAMES_CYCLE = 12;
@@ -257,7 +283,9 @@ class FlashRing: public Pattern {
 
 };
 
-
+/*
+ * alternating green and red rings chase up the tree
+ */
 class ChristmasRadio: public Pattern {
 
     const int RING_NUMBER = 5;
@@ -292,6 +320,9 @@ class ChristmasRadio: public Pattern {
     }
 };
 
+/*
+ * a small pulsating circle. Used as an "off" state
+ */
 class Eye: public Pattern {
 
   public:
@@ -324,7 +355,10 @@ class Eye: public Pattern {
     }
 };
 
-
+/*
+ * A fire effect
+ * adapted from http://www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/
+ */
 class Fire: public Pattern {
 
     const byte NOROWS = 4;
@@ -396,6 +430,10 @@ class Fire: public Pattern {
     }
 };
 
+/*
+ * Each strip shows a red green and blue bounding dot
+ * adapted from http://www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/
+ */
 class BouncingBall: public Pattern {
 
     const byte NOROWS=8;
@@ -461,6 +499,9 @@ class BouncingBall: public Pattern {
     }
 };
 
+/*
+ * chases rings up the tree. The brightness/colour of each ring determined by the audio volume in the room.
+ */
 class Loudness: public Pattern {
 
     SlidingWindow history = SlidingWindow(LEDS_PER_ROW);
@@ -488,6 +529,9 @@ class Loudness: public Pattern {
     }
 };
 
+/*
+ * randomly lights up a number of dots every frame.
+ */
 class Sparkle: public Pattern {
 
     const int SPARKLES = 10;
@@ -511,6 +555,9 @@ class Sparkle: public Pattern {
     }
 };
 
+/*
+ * shows a white band around the middle of the tree. The band moves up and down using subpixel rendering to gradually move up and down.
+ */
 class Wiggle: public Pattern {
 
     const int WIDTH = 2;
@@ -543,6 +590,9 @@ class Wiggle: public Pattern {
     }
 };
 
+/*
+ * spins a spiral of colour around the tree
+ */
 class Diagonal: public Pattern {
 
   public:
@@ -566,6 +616,10 @@ class Diagonal: public Pattern {
     }
 };
 
+/*
+ * shows random fireworks.
+ * Each firework shoots up, explodes in a flash, before stars twinkle down and fade out.
+ */
 class Fireworks: public Pattern {
 
   static const int NO_FIREWORKS = 6;

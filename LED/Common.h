@@ -1,6 +1,6 @@
-#define ROWS 16
-#define LEDS_PER_ROW 30
-#define NUM_LEDS ROWS*LEDS_PER_ROW
+#define ROWS             16 //the number of strips.
+#define LEDS_PER_ROW     30 // number of leds on each strip
+#define NUM_LEDS         ROWS*LEDS_PER_ROW
 
 //The main framebuffer. Managed by PatternManager
 CRGB leds[NUM_LEDS];
