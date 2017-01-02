@@ -1,3 +1,6 @@
+/*
+ * Utility functions for calculating led positions
+ */
 
 //returns the ID of the led on the given row, at the give height.
 //Will "wrap" out of range leds between rows and heights

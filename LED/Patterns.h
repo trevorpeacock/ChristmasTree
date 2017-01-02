@@ -1,20 +1,7 @@
-#include "UtilityPatterns.h"
-
 /*
- * base class, by default blanks all LEDs
+ * A library of pretty patterns for the tree to display
  */
-class Pattern {
-  public:
-    //This is called everytime the pattern starts to be used
-    virtual void setup() {
-    }
-    //Called every frame. Pattern should be supplied to provided buffer
-    virtual void update(CRGB ledbuffer[]) {
-      for (int i = 0; i < NUM_LEDS; i++) {
-        ledbuffer[i] = CRGB::Black;
-      }
-    }
-};
+#include "UtilityPatterns.h"
 
 /*
  * Blank (black) pattern

@@ -1,3 +1,6 @@
+/*
+ * These classes manages which patterns to display, and crossfading beween them.
+ */
 #include "Patterns.h"
 #define DEMO false
 

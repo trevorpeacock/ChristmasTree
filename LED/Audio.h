@@ -1,3 +1,6 @@
+/*
+ * Manages converting audio volume to discreet levels.
+ */
 #define AUDIODEBUG true
 
 /*

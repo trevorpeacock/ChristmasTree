@@ -1,11 +1,31 @@
+/*
+ * Functional or debug patterns that overlay a rendered pattern.
+ * These are called from the main loop.
+ */
 #include "Common.h"
 #include "Audio.h"
 #include "LedCalculations.h"
 
 /*
+ * base class, by default blanks all LEDs
+ */
+class Pattern {
+  public:
+    //This is called everytime the pattern starts to be used
+    virtual void setup() {
+    }
+    //Called every frame. Pattern should be supplied to provided buffer
+    virtual void update(CRGB ledbuffer[]) {
+      for (int i = 0; i < NUM_LEDS; i++) {
+        ledbuffer[i] = CRGB::Black;
+      }
+    }
+};
+
+/*
  * displays a bright band of white at the top and bottom if sound peaks
  */
-class SoundPeak {
+class SoundPeak: public Pattern {
   public: SoundPeak() {
   }
   
@@ -27,7 +47,7 @@ class SoundPeak {
 /*
  * displays a number of red dots representing the audiolevel
  */
-class SoundLevelStatus {
+class SoundLevelStatus: public Pattern {
   public: SoundLevelStatus() {
   }
   
@@ -45,7 +65,7 @@ class SoundLevelStatus {
 /*
  * blinks a led on or off each frame
  */
-class FrameStatus {
+class FrameStatus: public Pattern {
   public: FrameStatus() {
   }
   
