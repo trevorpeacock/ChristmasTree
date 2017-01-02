@@ -1,17 +1,29 @@
 #include <FastLED.h>
 #include "PatternManager.h"
 
+//Enables soundlevel and frame debug patterns
 #define DEBUG false
+
+//Limits maximum power draw to the specified number of amps.
+float MAX_POWER_AMPS = 0;
+
+//WARNING: this will disable MAX_POWER_AMPS limit and run leds as hard as possible.
+//WARNING: this will disable MAX_POWER_AMPS limit and run leds as hard as possible.
+//WARNING: this will disable MAX_POWER_AMPS limit and run leds as hard as possible.
+#define LOADTEST false
 
 #define LED_DATA_DPIN 2
 #define FRAME_SIGNAL_DPIN 3
+
 
 void setup() {
   //Debugging
   Serial.begin(250000);
   //Initialise FastLED library
   FastLED.addLeds<NEOPIXEL, LED_DATA_DPIN>(leds, NUM_LEDS);
-  FastLED.setMaxPowerInVoltsAndMilliamps(5,5000); 
+  if(!LOADTEST)
+    if(MAX_POWER_AMPS>0)
+      FastLED.setMaxPowerInVoltsAndMilliamps(5,MAX_POWER_AMPS*1000);
   //Comms from Sensor board
   Serial3.begin(250000);
   //Frame signal to Sensor Board
@@ -52,6 +64,23 @@ void loop() {
   //Start a timer
   WaitFor t = WaitFor(FRAME_TIME);
 
+  if(LOADTEST) {
+    if(framenumber==1) loadtest.setup();
+    if(!Serial.available()) {
+      loadtest.update(leds);
+    } else {
+      //if we receive something, stop the test.
+      blank.update(leds);
+    }
+    if(framenumber%30==0) {
+      Serial.println("Power: " + String(0.001 * calculate_unscaled_power_mW(leds, NUM_LEDS)) + "W");
+      frametime = 0;
+    }
+    FastLED.show();
+    while(t.wait());
+    return;
+  }
+  
   //Signal Sensor board to send data, and wait for 2 bytes
   digitalWrite(FRAME_SIGNAL_DPIN, HIGH);
   while(Serial3.available()<2) continue;

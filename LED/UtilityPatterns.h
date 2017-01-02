@@ -82,8 +82,56 @@ class FrameStatus: public Pattern {
 
 };
 
+/*
+ * Tests the power supply
+ */
+class LoadTest: public Pattern {
+
+  public:
+    LoadTest() {
+    }
+
+    virtual void setup() {
+    }
+
+    virtual void update(CRGB ledbuffer[]) {
+      Pattern::update(ledbuffer);
+      int framestep = 3;
+      int frame = framenumber/framestep;
+      int phase1 = NUM_LEDS*framestep;
+      int phase2 = phase1 + 30*60;
+      int phase3 = phase2 + 30*5;
+      if(framenumber<phase1) {
+        //Slowly increase power, turning on one led at a time
+        int start = NUM_LEDS - (frame % int(NUM_LEDS))-1;
+        for(int i=NUM_LEDS-1; i>=start; i--) {
+          ledbuffer[i]=CRGB::White;
+        }
+      } else if(framenumber<phase2) {
+        //Blink all leds on and off every 10 seconds
+        if(((frame-NUM_LEDS)/10/10) % 2==0) {
+          for(int i=0; i<NUM_LEDS; i++) {
+            ledbuffer[i]=CRGB::White;
+          }
+        }
+      } else if(framenumber<phase3) {
+        //Blink all leds on and off every frame
+        if(framenumber % 2==0) {
+          for(int i=0; i<NUM_LEDS; i++) {
+            ledbuffer[i]=CRGB::White;
+          }
+        }
+      } else {
+        //Keep leds on
+        for(int i=0; i<NUM_LEDS; i++) {
+          ledbuffer[i]=CRGB::White;
+        }
+      }
+    }
+};
 
 SoundPeak soundpeak = SoundPeak();
 SoundLevelStatus soundlevelstatus = SoundLevelStatus();
 FrameStatus framestatus = FrameStatus();
+LoadTest loadtest = LoadTest();
 
