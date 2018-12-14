@@ -1,8 +1,9 @@
+
 #include <SoftwareSerial.h>
 #include "Common.h"
 
-#define FRAME_SIGNAL_DPIN 12
-#define SOFTWARE_SERIAL_DPIN 13
+#define FRAME_SIGNAL_DPIN 10
+#define SOFTWARE_SERIAL_DPIN 9
 #define AUDIO_APIN 0
 #define LIGHT_SENSOR_APIN 1
 
@@ -14,21 +15,22 @@ void setup() {
   //Debugging
   Serial.begin(250000);
   //Comm to LED board
-  mySerial.begin(250000);
+  mySerial.begin(9600);
   //Initialise the audio levels
   minmax = MinMax();
 }
 
 bool signalpin = false;
+unsigned int watchdog;
 
 void loop() {
   int signalpinval = digitalRead(FRAME_SIGNAL_DPIN);
   //Check if signal pin goes high
-  if(signalpinval==HIGH && signalpin!=signalpinval) {
+  if((signalpinval==HIGH && signalpin!=signalpinval) || millis() - watchdog > 1000) {
     //Send data to LED board
 
     //Fetch audio and read light data
-    unsigned int audiolevel = minmax.getRange();
+    unsigned int audiolevel = 0;//minmax.getRange();
     unsigned int lightlevel = analogRead(LIGHT_SENSOR_APIN);
     /*  Arrange data into two bytes
      *  llllllaa aaaaaaaa
@@ -36,10 +38,12 @@ void loop() {
     lightlevel = (lightlevel / 16) << 10;
     audiolevel |= lightlevel;
     //send two bytes to LED board
+    mySerial.write(byte(42));
     mySerial.write(byte(audiolevel>>8));
     mySerial.write(byte(audiolevel&255));
     //reset audio levels
     minmax = MinMax();
+    watchdog = millis();
   } else {
     //Spend 1ms reading in audio data
     WaitFor timer = WaitFor(1);
@@ -49,4 +53,3 @@ void loop() {
   }
   signalpin = signalpinval;
 }
-

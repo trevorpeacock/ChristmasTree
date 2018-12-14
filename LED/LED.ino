@@ -4,6 +4,9 @@
 //Enables soundlevel and frame debug patterns
 #define DEBUG false
 
+#define SOUND_SENSOR false
+#define LIGHT_SENSOR true
+
 //Limits maximum power draw to the specified number of amps.
 float MAX_POWER_AMPS = 0;
 
@@ -18,20 +21,20 @@ float MAX_POWER_AMPS = 0;
 
 void setup() {
   //Debugging
-  Serial.begin(250000);
+  Serial.begin(9600);
   //Initialise FastLED library
   FastLED.addLeds<NEOPIXEL, LED_DATA_DPIN>(leds, NUM_LEDS);
   if(!LOADTEST)
     if(MAX_POWER_AMPS>0)
       FastLED.setMaxPowerInVoltsAndMilliamps(5,MAX_POWER_AMPS*1000);
   //Comms from Sensor board
-  Serial3.begin(250000);
+  if(SOUND_SENSOR || LIGHT_SENSOR) Serial3.begin(9600);
   //Frame signal to Sensor Board
   pinMode(FRAME_SIGNAL_DPIN, OUTPUT);
   //Reset frame signal and clear serial buffer
   digitalWrite(FRAME_SIGNAL_DPIN, LOW);
   delay(5);
-  while(Serial3.available()) Serial3.read();
+  if(SOUND_SENSOR || LIGHT_SENSOR) while(Serial3.available()) Serial3.read();
   //Clear led buffer
   for(int i=0; i<NUM_LEDS; i++) {
     leds[i]=CRGB::Black;
@@ -40,9 +43,9 @@ void setup() {
   //Determines which set of patterns to display based on audio levels
   levelmanager.setup();
   //Pattern that reacts directly to audio volume
-  soundpeak.setup();
+  if(SOUND_SENSOR) soundpeak.setup();
   //debug pattern, displays the current pattern level
-  soundlevelstatus.setup();
+  if(SOUND_SENSOR) soundlevelstatus.setup();
   //debug pattern, flickers indicating program is running
   framestatus.setup();
 }
@@ -53,6 +56,9 @@ long frametime=0;
 const int FRAME_TIME=33;  // 30 frames/sec
 //tracks recent sound level
 int lastlevel = -1;
+
+unsigned int lightlevel = 0;
+unsigned int audiolevel = 0;
 
 void loop() {
   //sends average time to calculate a frame, once a second
@@ -81,40 +87,51 @@ void loop() {
     return;
   }
   
-  //Signal Sensor board to send data, and wait for 2 bytes
-  digitalWrite(FRAME_SIGNAL_DPIN, HIGH);
-  while(Serial3.available()<2) continue;
-  digitalWrite(FRAME_SIGNAL_DPIN, LOW);
-  //Read data and split into 
-  unsigned int lightlevel = Serial3.read();
-  unsigned int audiolevel = (lightlevel & 3) << 8;
-  lightlevel = lightlevel >> 2;
-  audiolevel = audiolevel | Serial3.read();
-
-  //update sound level model
-  soundlevel.update(audiolevel);
-  int level = soundlevel.getLevel();
-
-  if(lastlevel != soundlevel.getLevel()) {
-    //if sound level has changed inform levelmanager
-    lastlevel = soundlevel.getLevel();
-    levelmanager.newlevel(lastlevel);
+  if(SOUND_SENSOR || LIGHT_SENSOR) {
+    //Signal Sensor board to send data, and wait for 2 bytes
+    while(Serial3.available()) Serial3.read();
+    digitalWrite(FRAME_SIGNAL_DPIN, HIGH);
+    while(Serial3.available()<3) continue;
+    while(Serial3.available() && Serial3.read()!=42) continue;
+    while(Serial3.available()<2) continue;
+    digitalWrite(FRAME_SIGNAL_DPIN, LOW);
+    //Read data and split into 
+    lightlevel = Serial3.read();
+    //Serial.print(lightlevel);
+    //Serial.print(" ");
+    audiolevel = (lightlevel & 3) << 8;
+    lightlevel = lightlevel >> 2;
+    audiolevel = audiolevel | Serial3.read();
+    Serial.println(lightlevel);
+    if(SOUND_SENSOR) {
+      //update sound level model
+      soundlevel.update(audiolevel);
+      int level = soundlevel.getLevel();
+    
+      if(lastlevel != soundlevel.getLevel()) {
+        //if sound level has changed inform levelmanager
+        lastlevel = soundlevel.getLevel();
+        levelmanager.newlevel(lastlevel);
+      }
+    }
   }
+
   frametime += t.timeRemaining();
   //generate new frame data
   levelmanager.update();
   frametime -= t.timeRemaining();
 
   //small indicator of sound level and frame status for testing
-  if(DEBUG) soundlevelstatus.update();
+  if(SOUND_SENSOR && DEBUG) soundlevelstatus.update();
   if(DEBUG) framestatus.update();
 
   //peak indicator
-  if(!DEMO) soundpeak.update();
+  if(SOUND_SENSOR && !DEMO) soundpeak.update();
 
   //set overall brightness baseed on ambient light levels
-  if(!DEMO)
+  if(LIGHT_SENSOR && !DEMO)
     FastLED.setBrightness(map(constrain(lightlevel, 5, 40), 2, 40, 0, 255));
+  //FastLED.setBrightness(64);
   //Display pattern
   FastLED.show();
   //Send alert if calculations took too long
@@ -124,4 +141,3 @@ void loop() {
   while(t.wait()) {
   }
 }
-
