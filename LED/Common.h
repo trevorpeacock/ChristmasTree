@@ -3,7 +3,15 @@
  */
 #define ROWS             16 //the number of strips.
 #define LEDS_PER_ROW     30 // number of leds on each strip
-#define NUM_LEDS         ROWS*LEDS_PER_ROW
+#define STAR_POINTS       5 // 
+#define STAR_POINT_LEDS   5
+#define STAR_CORE_LEDS    3
+#define STAR_CENTER_LEDS  2
+
+#define NUM_LEDS_TREE    ROWS*LEDS_PER_ROW
+#define NUM_LEDS_STAR    STAR_POINTS*STAR_POINT_LEDS*2+STAR_POINTS*STAR_CORE_LEDS+STAR_CENTER_LEDS
+
+#define NUM_LEDS         NUM_LEDS_TREE+NUM_LEDS_STAR
 
 //The main framebuffer. Managed by PatternManager
 CRGB leds[NUM_LEDS];
@@ -72,4 +80,3 @@ int map16(int x, int in_min, int in_max, int out_min, int out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-
