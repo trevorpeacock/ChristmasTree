@@ -261,13 +261,15 @@ class LevelManager {
               return PATTERNS::EYE;
           }; break;
         case 1:
-          switch (patterncount % 3) {
+          switch (patterncount % 4) {
             case 0:
               return PATTERNS::ORNAMENTS;
             case 1:
               return PATTERNS::FALLINGSTAR;
             case 2:
               return PATTERNS::DIAGONAL;
+            case 3:
+              return PATTERNS::SWIRLPAINT;
           }; break;
         case 2:
           switch (patterncount % 7) {
