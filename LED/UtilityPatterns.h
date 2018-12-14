@@ -20,6 +20,13 @@ class Pattern {
         ledbuffer[i] = CRGB::Black;
       }
     }
+
+    virtual void copy_to_star(CRGB ledbuffer[], int pos) {
+      int diff = NUM_LEDS_TREE+pos;
+      for (int i = NUM_LEDS_TREE; i < NUM_LEDS; i++) {
+        ledbuffer[i] = ledbuffer[i-diff];
+      }
+    }
 };
 
 /*
@@ -134,4 +141,3 @@ SoundPeak soundpeak = SoundPeak();
 SoundLevelStatus soundlevelstatus = SoundLevelStatus();
 FrameStatus framestatus = FrameStatus();
 LoadTest loadtest = LoadTest();
-

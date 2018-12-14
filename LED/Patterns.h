@@ -677,6 +677,7 @@ class Diagonal: public Pattern {
           ledbuffer[ledid(row, l)]=CHSV(v3, 255, 64);
         }
       }
+      copy_to_star(ledbuffer, 0);
     }
 };
 
