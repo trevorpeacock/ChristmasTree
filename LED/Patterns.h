@@ -126,6 +126,8 @@ class FallingStar: public Pattern {
     //star saturation
     int ornament_sat[NO_ORNAMENTS];
 
+    const static int PULSE_TIME = 256;
+
   public:
     FallingStar() {
     }
@@ -195,6 +197,11 @@ class FallingStar: public Pattern {
           //the star has lower saturation, making it whiter and brighter
           setLed(ledbuffer, ornament_row[i], height, CHSV(ornament_hue[i], ornament_sat[i] / 2, bright));
         }
+      }
+      int sat = map(sin8((framenumber%PULSE_TIME)*256/PULSE_TIME), 0,255, 128, 0);
+      int bri = map(sin8((framenumber%PULSE_TIME)*256/PULSE_TIME), 0,255, 128, 192);
+      for (int i = NUM_LEDS_TREE; i < NUM_LEDS; i++) {
+        ledbuffer[i]=CHSV(32, sat, bri);
       }
     }
     void setLed(CRGB ledbuffer[], int row, int height, CRGB colour) {
@@ -804,3 +811,224 @@ class Fireworks: public Pattern {
     }
 };
 
+/*
+ * stripes with random colors
+ */
+class AltStripes: public Pattern {
+
+    const static int NO_STRIPES = ROWS/2;
+    const CHSV background_colour = CHSV( 96, 255, 64);
+    const int frames_between_column_change = 30*5;
+    const int fade_frames = 30*1;
+
+    CHSV stripes[NO_STRIPES];
+    long next_column_change;
+    int next_column_to_change;
+
+    CHSV points[STAR_POINTS];
+    long next_point_change;
+    int next_point_to_change;
+
+  public:
+    AltStripes() {
+    }
+
+    virtual int randomise() {
+      //avoid 64-140
+      #define diff (140-64)
+      return (random(255-diff)+140)%256;
+    }
+
+    virtual int randomise(int oldval) {
+      int hue;
+      do {
+        hue = randomise();
+      } while(abs(hue-oldval)<30);
+      return hue;
+    }
+
+    virtual void setup() {
+      for (int i = 0; i < NO_STRIPES; i++) {
+        stripes[i] = CHSV(randomise(), 255, 128);
+      }
+      next_column_change = framenumber+frames_between_column_change;
+      next_column_to_change=random(NO_STRIPES);
+
+      for (int i = 0; i < STAR_POINTS; i++) {
+        points[i] = CHSV(randomise(), 255, 128);
+      }
+      next_point_change = framenumber+frames_between_column_change*1.5;
+      next_point_to_change=random(STAR_POINTS);
+    }
+
+    virtual void update(CRGB ledbuffer[]) {
+      CHSV color;
+      for (int i = 0; i < NO_STRIPES; i++) {
+        for (int l = 0; l < LEDS_PER_ROW; l++) {
+          ledbuffer[ledid(i*2,l)] = background_colour;
+        }
+        color = stripes[i];
+        if(i== next_column_to_change && framenumber>=next_column_change) {
+          if(framenumber==next_column_change+fade_frames*2) {
+            next_column_change = framenumber + frames_between_column_change - fade_frames*2;
+            next_column_to_change = (next_column_to_change+1)%NO_STRIPES;
+          } else {
+            color.value=color.value*(1.0*abs(next_column_change+fade_frames-framenumber)/fade_frames);
+            if(framenumber==next_column_change+fade_frames) {
+              stripes[i] = CHSV(randomise(stripes[i].hue), 255, 128);
+            }
+          }
+        }
+        for (int l = 0; l < LEDS_PER_ROW; l++) {
+          ledbuffer[ledid(i*2+1,l)] = color;
+        }
+      }
+      for(int i = starid(1,0, 0); i <= starid(0,0,1); i++) {
+        leds[i]=background_colour;
+      }
+      for (int i = 0; i < STAR_POINTS; i++) {
+        color = points[i];
+        if(i== next_point_to_change && framenumber>=next_point_change) {
+          if(framenumber==next_point_change+fade_frames*2) {
+            next_point_change = framenumber + frames_between_column_change - fade_frames*2;
+            next_point_to_change = (next_point_to_change+1)%STAR_POINTS;
+          } else {
+            color.value=color.value*(1.0*abs(next_point_change+fade_frames-framenumber)/fade_frames);
+            if(framenumber==next_point_change+fade_frames) {
+              points[i] = CHSV(randomise(points[i].hue), 255, 128);
+            }
+          }
+        }
+        for (int l = 0; l < STAR_POINT_LEDS*2; l++) {
+          ledbuffer[starid(2, i, l)] = color;
+        }
+      }
+    }
+};
+
+/*
+ * stripes with random colors
+ */
+class SwirlPaint: public Pattern {
+
+    const static int STRIPE_WIDTH = 4;
+    const static int NO_STRIPES = ROWS/STRIPE_WIDTH;
+    constexpr static float swirl_twist_multiplier = 1.2;
+    const int frames_between_column_change = 30*4;
+    const int fade_frames = 40;
+
+    CHSV stripes[NO_STRIPES];
+    CHSV new_stripes[NO_STRIPES];
+    long next_column_change;
+    int next_column_to_change;
+
+    CHSV star;
+    CHSV new_star;
+    const int star_fade_frames = 15;
+
+  public:
+    SwirlPaint() {
+    }
+
+    virtual int randomise() {
+      return random(255);
+    }
+
+    virtual int randomise(int oldval) {
+      int hue;
+      do {
+        hue = randomise();
+      } while(abs(hue-oldval)<40);
+      return hue;
+    }
+
+    virtual int randomise(int oldval1, int oldval2) {
+      int hue;
+      do {
+        hue = randomise(oldval1);
+      } while(abs(hue-oldval2)<40);
+      return hue;
+    }
+
+    virtual int randomise(int oldval1, int oldval2, int oldval3) {
+      int hue;
+      do {
+        hue = randomise(oldval1, oldval2);
+      } while(abs(hue-oldval3)<40);
+      return hue;
+    }
+
+    virtual void setup() {
+      stripes[0] = CHSV(randomise(), 255, 128);
+      for (int i = 1; i < NO_STRIPES-1; i++) {
+        stripes[i] = CHSV(randomise(stripes[i-1].hue), 255, 128);
+      }
+      stripes[NO_STRIPES-1] = CHSV(randomise(stripes[0].hue, stripes[NO_STRIPES-2].hue), 255, 128);
+      next_column_change = framenumber+frames_between_column_change;
+      next_column_to_change=random(NO_STRIPES);
+      star=CHSV(0,0,0);
+    }
+    
+    virtual void update(CRGB ledbuffer[]) {
+      CHSV *stripe_set;
+      int transition_pos = (next_column_change-star_fade_frames-framenumber)*LEDS_PER_ROW/fade_frames;
+      if(framenumber==next_column_change-fade_frames-star_fade_frames) {
+        for(int i = 0; i < NO_STRIPES; i++) new_stripes[i]=stripes[i];
+        new_stripes[next_column_to_change].hue=randomise(
+              new_stripes[next_column_to_change].hue,
+              new_stripes[(next_column_to_change-1)%NO_STRIPES].hue,
+              new_stripes[(next_column_to_change+1)%NO_STRIPES].hue
+              );
+        new_star=new_stripes[next_column_to_change];
+      } else if(framenumber==next_column_change) {
+        for(int i = 0; i < NO_STRIPES; i++) stripes[i]=new_stripes[i];
+        star=new_star;
+        next_column_change = framenumber + frames_between_column_change;
+        next_column_to_change = (next_column_to_change+1)%NO_STRIPES;
+      }
+      for (int h = 0; h < LEDS_PER_ROW; h++) {
+        if(framenumber>=next_column_change-fade_frames-star_fade_frames) {
+          if(LEDS_PER_ROW-h>transition_pos) {
+            stripe_set=new_stripes;
+          } else {
+            stripe_set=stripes;
+          }
+        } else {
+          stripe_set = stripes;
+        }
+        int hswirl = h/swirl_twist_multiplier;
+        for (int r = 0; r < ROWS; r++) {
+          ledbuffer[ledid(r,h)] = stripe_set[((r+hswirl)/STRIPE_WIDTH)%NO_STRIPES];
+        }
+      }
+      transition_pos = -(next_column_change-star_fade_frames-framenumber)*8/star_fade_frames;
+      for(int r = 0; r < 8; r++)
+        if(transition_pos>r) {
+          fillstar(ledbuffer, new_star, r);
+        } else {
+          fillstar(ledbuffer, star, r);
+        }
+    }
+};
+
+/*
+ * test
+ */
+class TestPattern: public Pattern {
+    int position;
+
+  public:
+    TestPattern() {
+    }
+
+    virtual void setup() {
+      position = 0;
+    }
+
+    virtual void update(CRGB ledbuffer[]) {
+      Pattern::update(ledbuffer);
+      if(position%2==0) ledbuffer[starid(1,position/2, 0)]=CRGB::White;
+      else              ledbuffer[starid(1,position/2, 2)]=CRGB::White;
+      position = (position + 1) % (STAR_POINTS*2);
+    }
+};

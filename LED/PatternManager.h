@@ -22,7 +22,10 @@ namespace PATTERNS {
     SPARKLE,
     WIGGLE,
     DIAGONAL,
-    FIREWORKS
+    FIREWORKS,
+    ALTSTRIPES,
+    SWIRLPAINT,
+    TESTPATTERN
   };
 };
 
@@ -43,6 +46,9 @@ Sparkle sparkle = Sparkle();
 Wiggle wiggle = Wiggle();
 Diagonal diagonal = Diagonal();
 Fireworks fireworks = Fireworks();
+AltStripes altstripes = AltStripes();
+TestPattern testpattern = TestPattern();
+SwirlPaint swirlpaint = SwirlPaint();
 
 // given a pattern id, return that model
 // eg. getPattern(PATTERNS::BLANK) returns blank object.
@@ -80,6 +86,12 @@ Pattern* getPattern(int p) {
       return &diagonal;
     case PATTERNS::FIREWORKS:
       return &fireworks;
+    case PATTERNS::ALTSTRIPES:
+      return &altstripes;
+    case PATTERNS::TESTPATTERN:
+      return &testpattern;
+    case PATTERNS::SWIRLPAINT:
+      return &swirlpaint;
   }
 }
 
@@ -181,35 +193,37 @@ class LevelManager {
 
     void update() {
       if(DEMO) {
-        const int frames_per_pattern = 30*15;
+        const int frames_per_pattern = 30*120;
         //force first frame to be 5 seconds before first pattern (0th pattern is blank)
-        if(framenumber==1) framenumber = frames_per_pattern - 5*30;
+        if(framenumber==1) framenumber = frames_per_pattern - 1.5*30;
         //every frames_per_pattern frames we trigger a new pattern
         if(framenumber%frames_per_pattern==0) {
           int patternid = (framenumber/ frames_per_pattern) - 1;
           PATTERNS::PATTERN pattern;
           //predefined list of patterns
-          switch (patternid % 9) {
+          switch (patternid % 3) {
             case -1:
               //demo starts with 5 sec blank before fading in first pattern
               pattern = PATTERNS::BLANK; break;
             case 0:
-              pattern = PATTERNS::ORNAMENTS; break;
+              pattern = PATTERNS::SWIRLPAINT; break;//PATTERNS::TESTPATTERN; break;//PATTERNS::ORNAMENTS; break;
             case 1:
-              pattern = PATTERNS::FALLINGSTAR; break;
+              pattern = PATTERNS::ALTSTRIPES; break;
             case 2:
-              pattern = PATTERNS::DIAGONAL; break;
-            case 3:
-              pattern = PATTERNS::RADIO; break;
-            case 4:
-              pattern = PATTERNS::FIRE; break;
-            case 5:
-              pattern = PATTERNS::CHASE1; break;
-            case 6:
-              pattern = PATTERNS::BOUNCINGBALL; break;
-            case 7:
               pattern = PATTERNS::SPARKLE; break;
+            case 3:
+              pattern = PATTERNS::DIAGONAL; break;
+            case 4:
+              pattern = PATTERNS::FALLINGSTAR; break;
+            case 5:
+              pattern = PATTERNS::RADIO; break;
+            case 6:
+              pattern = PATTERNS::FIRE; break;
+            case 7:
+              pattern = PATTERNS::CHASE1; break;
             case 8:
+              pattern = PATTERNS::BOUNCINGBALL; break;
+            case 9:
               pattern = PATTERNS::FIREWORKS; break;
           };
           patternmanager.transition(pattern);
@@ -284,4 +298,3 @@ class LevelManager {
 };
 
 LevelManager levelmanager = LevelManager();
-
