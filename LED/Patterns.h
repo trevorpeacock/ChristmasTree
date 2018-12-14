@@ -343,6 +343,8 @@ class ChristmasRadio: public Pattern {
 
     int ROW_COUNT = 0;
 
+    const int LEDS_IN_SEQUENCE = LEDS_PER_ROW+8;
+
   public:
     ChristmasRadio() {
     }
@@ -359,12 +361,20 @@ class ChristmasRadio: public Pattern {
         } else {
           RING_COLOUR = CRGB::Red;
         }
-        for (int i = 0; i < ROWS; i++) {
-          ledbuffer[ledid(i, (ROW_COUNT + RING * RING_SPACER) % LEDS_PER_ROW)] = RING_COLOUR;
-        }
+        setring(ledbuffer, (ROW_COUNT + RING * RING_SPACER) % LEDS_IN_SEQUENCE, RING_COLOUR);
       }
       if (framenumber % RING_SPEED == 0) {
-        ROW_COUNT = (ROW_COUNT + 1) % LEDS_PER_ROW;
+        ROW_COUNT = (ROW_COUNT + 1) % LEDS_IN_SEQUENCE;
+      }
+    }
+
+    virtual void setring(CRGB ledbuffer[], int pos, CRGB color) {
+      if(pos<LEDS_PER_ROW) {
+        for (int i = 0; i < ROWS; i++) {
+          ledbuffer[ledid(i, pos)] = color;
+        }
+      } else {
+        fillstar(ledbuffer, color, pos-LEDS_PER_ROW);
       }
     }
 };
