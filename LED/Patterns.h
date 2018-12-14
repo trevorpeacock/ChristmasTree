@@ -216,7 +216,7 @@ class FallingStar: public Pattern {
  * red green and blue dots chace alternately up and down each strip.
  */
 class Chase1: public Pattern {
-
+//TODO: pattern lights first led in star
     int position;
 
   public:
@@ -419,6 +419,8 @@ class Eye: public Pattern {
  * A fire effect
  * adapted from http://www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/
  */
+
+ //TODO: pattern lights leds on inner core of star
 class Fire: public Pattern {
 
     const byte NOROWS = 4;
