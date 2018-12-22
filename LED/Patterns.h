@@ -384,6 +384,8 @@ class ChristmasRadio: public Pattern {
  */
 class Eye: public Pattern {
 
+  int audiolevel;
+
   public:
     Eye() {
     }
@@ -393,25 +395,35 @@ class Eye: public Pattern {
 
     virtual void update(CRGB ledbuffer[]) {
       Pattern::update(ledbuffer);
-      int a = 255;
-      int b = 96;
-      int c = 72;
+      int diff = soundlevel.getAudioLevel() - audiolevel;
+      diff = constrain(diff, -2, 2);
+      audiolevel += diff;
+      int bright_a = 255;
+      int bright_b = 96;
+      int bright_c = 72;
+      int sat_a = 255;
+      int sat_b = 96;
+      int sat_c = 72;
       //vary the brightness
-      int transition = sin8((map(framenumber % 120, 0, 120 - 1, 0, 255) + 192) % 256);
-      transition = map(transition, 0, 255, 192, 255);
-      a = a * transition / 255;
-      b = b * transition / 255;
-      c = c * transition / 255;
+      int bright = sin8((map(framenumber % 120, 0, 120 - 1, 0, 255) + 192) % 256);
+      bright = map(bright, 0, 255, 192, 255);
+      bright_a = bright_a * bright / 255;
+      bright_b = bright_b * bright / 255;
+      bright_c = bright_c * bright / 255;
+      int sat = map(constrain(audiolevel, 0, 100), 0, 100, 0, 255);
+      sat_a = sat_a * sat / 255;
+      sat_b = sat_b * sat / 255;
+      sat_c = sat_c * sat / 255;
 
-      ledbuffer[ledid(1, 15)] = CHSV(0, 0, a);
-      ledbuffer[ledid(0, 15)] = CHSV(0, 0, b);
-      ledbuffer[ledid(2, 15)] = CHSV(0, 0, b);
-      ledbuffer[ledid(1, 14)] = CHSV(0, 0, b);
-      ledbuffer[ledid(1, 16)] = CHSV(0, 0, b);
-      ledbuffer[ledid(0, 14)] = CHSV(0, 0, c);
-      ledbuffer[ledid(0, 16)] = CHSV(0, 0, c);
-      ledbuffer[ledid(2, 14)] = CHSV(0, 0, c);
-      ledbuffer[ledid(2, 16)] = CHSV(0, 0, c);
+      ledbuffer[ledid(8+1, 15)] = CHSV(0, sat_a, bright_a);
+      ledbuffer[ledid(8+0, 15)] = CHSV(0, sat_b, bright_b);
+      ledbuffer[ledid(8+2, 15)] = CHSV(0, sat_b, bright_b);
+      ledbuffer[ledid(8+1, 14)] = CHSV(0, sat_b, bright_b);
+      ledbuffer[ledid(8+1, 16)] = CHSV(0, sat_b, bright_b);
+      ledbuffer[ledid(8+0, 14)] = CHSV(0, sat_c, bright_c);
+      ledbuffer[ledid(8+0, 16)] = CHSV(0, sat_c, bright_c);
+      ledbuffer[ledid(8+2, 14)] = CHSV(0, sat_c, bright_c);
+      ledbuffer[ledid(8+2, 16)] = CHSV(0, sat_c, bright_c);
     }
 };
 
