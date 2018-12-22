@@ -4,7 +4,7 @@
 //Enables soundlevel and frame debug patterns
 #define DEBUG false
 
-#define SOUND_SENSOR false
+#define SOUND_SENSOR true
 #define LIGHT_SENSOR true
 
 //Limits maximum power draw to the specified number of amps.
@@ -62,8 +62,9 @@ unsigned int audiolevel = 0;
 
 void loop() {
   //sends average time to calculate a frame, once a second
-  if(framenumber%30==0 and framenumber > 0) {
+  if(DEBUG && (framenumber%30==0 and framenumber > 0)) {
     Serial.println("Average frame time " + String(float(frametime)/30) + "ms.");
+    Serial.println("light: " + String(lightlevel) + " audio:" + String(audiolevel));
     frametime = 0;
   }
   framenumber ++;
@@ -102,7 +103,6 @@ void loop() {
     audiolevel = (lightlevel & 3) << 8;
     lightlevel = lightlevel >> 2;
     audiolevel = audiolevel | Serial3.read();
-    Serial.println(lightlevel);
     if(SOUND_SENSOR) {
       //update sound level model
       soundlevel.update(audiolevel);
@@ -130,7 +130,7 @@ void loop() {
 
   //set overall brightness baseed on ambient light levels
   if(LIGHT_SENSOR && !DEMO)
-    FastLED.setBrightness(map(constrain(lightlevel, 5, 40), 2, 40, 0, 255));
+    FastLED.setBrightness(map(constrain(lightlevel, 5, 40), 1, 40, 0, 255));
   //FastLED.setBrightness(64);
   //Display pattern
   FastLED.show();
