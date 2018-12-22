@@ -33,19 +33,34 @@ class Pattern {
  * displays a bright band of white at the top and bottom if sound peaks
  */
 class SoundPeak: public Pattern {
+
+  int frames;
+  const int maxframes = 7;
+  
   public: SoundPeak() {
+    frames = 0;
   }
   
   void setup() {
   }
 
   void update() {
+    CRGB color ;
     //a sound peak occurs if current volume is twice the average volume
     if(soundlevel.getLastVolume()>soundlevel.getAudioLevel()*2) {
-      for(int i = 0; i<ROWS; i++) {
-        leds[LEDS_PER_ROW * i]=CRGB::White;
-        leds[LEDS_PER_ROW * i+29]=CRGB::White;
+      frames=maxframes;
+      color = CHSV(random8(), 255, 255);
+      for(int i=0; i<50; i++) {
+        leds[random(NUM_LEDS)]=color;
       }
+    }
+    if(frames>0) {
+      color = CHSV(0,0,255*frames*frames/(maxframes*maxframes));
+      for(int i = 0; i<ROWS; i++) {
+        leds[LEDS_PER_ROW * i]=color;
+        leds[LEDS_PER_ROW * i+29]=color;
+      }
+      frames--;
     }
   }
 
@@ -62,8 +77,17 @@ class SoundLevelStatus: public Pattern {
   }
 
   void update() {
-    for(int i = 0; i<soundlevel.getLevel()+1; i++) {
-      leds[i]=CRGB::Red;
+    CRGB color;
+    switch (soundlevel.getLevel()) {
+      case 0:
+        color=CRGB::Red; break;
+      case 1:
+        color=CRGB::Green; break;
+      case 2:
+        color=CRGB::Blue; break;
+    }    
+    for(int i = 1; i<soundlevel.getLevel()+2; i++) {
+      leds[ledid(i,0)]=color;
     }
   }
 
@@ -81,9 +105,9 @@ class FrameStatus: public Pattern {
 
   void update() {
     if(framenumber%2==1) {
-      leds[59] = CHSV( 0, 0, 64);
+      leds[0] = CHSV( 0, 0, 64);
     } else {
-      leds[59] = CRGB::Black;
+      leds[0] = CRGB::Black;
     }
   }
 
