@@ -30,7 +30,7 @@ void loop() {
     //Send data to LED board
 
     //Fetch audio and read light data
-    unsigned int audiolevel = 0;//minmax.getRange();
+    unsigned int audiolevel = minmax.getRange();
     unsigned int lightlevel = analogRead(LIGHT_SENSOR_APIN);
     /*  Arrange data into two bytes
      *  llllllaa aaaaaaaa
@@ -42,7 +42,7 @@ void loop() {
     mySerial.write(byte(audiolevel>>8));
     mySerial.write(byte(audiolevel&255));
     //reset audio levels
-    minmax = MinMax();
+    minmax.reset();
     watchdog = millis();
   } else {
     //Spend 1ms reading in audio data

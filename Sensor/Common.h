@@ -8,15 +8,19 @@ class MinMax {
   int samples;
 
   public: MinMax() {
-    min=32767;
-    max=-32768;
-    samples=0;
+    reset();
   }
 
   void update(int val) {
     if(val<min) min=val;
     if(val>max) max=val;
     samples++;
+  }
+
+  void reset() {
+    min=32767;
+    max=-32768;
+    samples=0;
   }
 
   int getMin() {
@@ -32,6 +36,7 @@ class MinMax {
   }
 
   int getRange() {
+    if(samples==0) return 0;
     return max-min;
   }
 };
@@ -52,4 +57,3 @@ class WaitFor {
     return millis()<(start+time_to_wait);
   }
 };
-
