@@ -7,6 +7,10 @@
 #define AUDIO_APIN 0
 #define LIGHT_SENSOR_APIN 1
 
+#low_fuses=0xff
+#high_fuses=0xde
+#extended_fuses=0x05
+
 SoftwareSerial mySerial(0, SOFTWARE_SERIAL_DPIN); // dont care about read pin, we never read.
 
 MinMax minmax;
