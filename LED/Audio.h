@@ -30,7 +30,7 @@ class SoundReactor {
   const int threshold_positive_hysteresis[2] = {/*0->1*/ 5, /*1->2*/ 5};
   //how long (seconds) must a new level be sustationed to transition
   const int level_minimum_duration_negative[2] = {/*1->0*/ 30, /*2->1*/ 30};
-  const int level_minimum_duration_positive[2] = {/*0->1*/ 0, /*1->2*/10};
+  const int level_minimum_duration_positive[2] = {/*0->1*/ 2, /*1->2*/10};
   
   public: SoundReactor() {
     audiolevel = 70;
@@ -86,7 +86,7 @@ class SoundReactor {
         Serial.println(String(audiolevel) + "<" + String(negative_threshold) + 
           " " + String(currentlevel) + "->" + String(prospective_level) + 
           " " + String((millis() - prospective_level_time)/1000) + 
-          "/" + String(level_minimum_duration_negative[currentlevel]));
+          "/" + String(level_minimum_duration_negative[currentlevel-1]));
       } else if(prospective_level>currentlevel) {
         Serial.println(String(positive_threshold) + "<" + String(audiolevel) +
           " " + String(currentlevel) + "->" + String(prospective_level) + 
@@ -122,4 +122,3 @@ class SoundReactor {
 };
 
 SoundReactor soundlevel = SoundReactor();
-
