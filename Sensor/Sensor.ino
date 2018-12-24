@@ -27,10 +27,18 @@ void setup() {
 bool signalpin = false;
 unsigned int watchdog;
 
+void listen(int duration) {
+  //Spend 1ms reading in audio data
+  WaitFor timer = WaitFor(duration);
+  while(timer.wait()) {
+    minmax.update(analogRead(AUDIO_APIN));
+  }
+}
+
 void loop() {
   int signalpinval = digitalRead(FRAME_SIGNAL_DPIN);
   //Check if signal pin goes high
-  if((signalpinval==HIGH && signalpin!=signalpinval) || millis() - watchdog > 1000) {
+  if((signalpinval==HIGH && signalpin!=signalpinval) || (millis() - watchdog > 1000)) {
     //Send data to LED board
 
     //Fetch audio and read light data
@@ -49,11 +57,7 @@ void loop() {
     minmax.reset();
     watchdog = millis();
   } else {
-    //Spend 1ms reading in audio data
-    WaitFor timer = WaitFor(1);
-    while(timer.wait()) {
-      minmax.update(analogRead(AUDIO_APIN));
-    }
+    listen(1);
   }
   signalpin = signalpinval;
 }
