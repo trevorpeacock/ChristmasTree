@@ -42,13 +42,13 @@ class MinMax {
 };
 
 /*
- * WaitFor(int) starts a timer. wait() returns false until the specified number of milliseconds expires.
+ * WaitFor(unsigned long) starts a timer. wait() returns false until the specified number of milliseconds expires.
  */
 class WaitFor {
   unsigned long start;
-  int time_to_wait;
+  unsigned long time_to_wait;
 
-  public: WaitFor(int w) {
+  public: WaitFor(unsigned long w) {
     start=millis();
     time_to_wait=w;
   }

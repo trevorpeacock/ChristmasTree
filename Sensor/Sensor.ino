@@ -25,9 +25,9 @@ void setup() {
 }
 
 bool signalpin = false;
-unsigned int watchdog;
+unsigned long watchdog;
 
-void listen(int duration) {
+void listen(unsigned long duration) {
   //Spend 1ms reading in audio data
   WaitFor timer = WaitFor(duration);
   while(timer.wait()) {
