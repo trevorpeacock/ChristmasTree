@@ -54,6 +54,6 @@ class WaitFor {
   }
 
   bool wait() {
-    return millis()<(start+time_to_wait);
+    return millis()-start<time_to_wait;
   }
 };
