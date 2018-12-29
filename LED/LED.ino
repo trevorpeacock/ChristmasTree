@@ -1,12 +1,6 @@
 #include <FastLED.h>
 #include "PatternManager.h"
 
-//Enables soundlevel and frame debug patterns
-#define DEBUG false
-
-#define SOUND_SENSOR true
-#define LIGHT_SENSOR true
-
 //Limits maximum power draw to the specified number of amps.
 float MAX_POWER_AMPS = 0;
 

@@ -1,6 +1,14 @@
 /*
  * Global variables and constants, and utility classes/functions.
  */
+//Enables soundlevel and frame debug patterns
+#define DEBUG false
+
+#define SOUND_SENSOR true
+#define LIGHT_SENSOR true
+
+
+
 #define ROWS             16 //the number of strips.
 #define LEDS_PER_ROW     30 // number of leds on each strip
 #define STAR_POINTS       5 // 
