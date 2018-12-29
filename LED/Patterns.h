@@ -436,7 +436,7 @@ class Fire: public Pattern {
     const static byte NOROWS = 4;
     byte heat[NOROWS][LEDS_PER_ROW];
     const int Cooling = 55;
-    const int Sparking = 120;
+    const int Sparking = 80;
     int cooldown;
     
   public:
@@ -449,6 +449,7 @@ class Fire: public Pattern {
     virtual void update(CRGB ledbuffer[]) {
       clear_star(ledbuffer);
       cooldown = random(0, ((Cooling * 10) / LEDS_PER_ROW) + 2);
+      if(SOUND_SENSOR) cooldown = cooldown*70/soundlevel.getAudioLevel();
       for (int i = 0; i < NOROWS; i++)
         updaterow(i, ledbuffer);
     }
@@ -470,6 +471,8 @@ class Fire: public Pattern {
       }
 
       // Step 3.  Randomly ignite new 'sparks' near the bottom
+      int sparking = sparking;
+      if(SOUND_SENSOR) sparking = sparking*soundlevel.getAudioLevel()/70;
       if ( random8(255) < Sparking ) {
         int y = random8(7);
         heat[row][y] = heat[row][y] + random8(160, 255);
