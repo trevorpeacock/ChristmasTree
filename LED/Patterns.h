@@ -587,6 +587,7 @@ class Loudness: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
+      clear_star(ledbuffer);
       int level = soundlevel.getLastVolume();
       history.push(level);
       for (int i = 0; i < LEDS_PER_ROW; i++) {
