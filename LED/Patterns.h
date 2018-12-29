@@ -590,19 +590,34 @@ class Loudness: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
-      clear_star(ledbuffer);
       int level = soundlevel.getLastVolume();
       history.push(level);
+
+      int bright, sat, hue;
+      CRGB colour;
+
+      for(int i = 0; i < 8; i++) {
+        if(i>0) level = level * 0.95;
+        //set brightness based on volume
+        bright = map16(constrain(level, 30, 150), 30, 150, 0, 255);
+        //saturation varies inversely to brightness. louder is whiter and brighter
+        sat = 255-bright;
+        //colour varies from red to blue based on loudness
+        hue = map16(constrain(level, 30, 100), 30, 100, 255, 160);
+        colour = CHSV(hue, sat, bright);
+        fillstar(ledbuffer, colour, i);
+      }
+      
       for (int i = 0; i < LEDS_PER_ROW; i++) {
         //for each ring we get a historic volume level
         level = history.getVal(LEDS_PER_ROW - i);
         //set brightness based on volume
-        int bright = map16(constrain(level, 30, 150), 30, 150, 0, 255);
+        bright = map16(constrain(level, 30, 150), 30, 150, 0, 255);
         //saturation varies inversely to brightness. louder is whiter and brighter
-        int sat = 255-bright;
+        sat = 255-bright;
         //colour varies from red to blue based on loudness
-        int hue = map16(constrain(level, 30, 100), 30, 100, 255, 160);
-        CRGB colour = CHSV(hue, sat, bright);
+        hue = map16(constrain(level, 30, 100), 30, 100, 255, 160);
+        colour = CHSV(hue, sat, bright);
         for (int j = 0; j < ROWS; j++) {
           ledbuffer[ledid(j, i)] = colour;
         }
