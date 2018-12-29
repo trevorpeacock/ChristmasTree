@@ -254,7 +254,7 @@ class Chase2: public Pattern {
 
     virtual void update(CRGB ledbuffer[]) {
       Pattern::update(ledbuffer);
-      position = (position + 1) % int(NUM_LEDS);
+      position = (position + 1) % int(NUM_LEDS_TREE);
       ledbuffer[ledid(position % ROWS, position / ROWS)] = CRGB::White;
     }
 
