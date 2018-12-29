@@ -216,7 +216,6 @@ class FallingStar: public Pattern {
  * red green and blue dots chace alternately up and down each strip.
  */
 class Chase1: public Pattern {
-//TODO: pattern lights first led in star
     int position;
 
   public:
@@ -230,9 +229,9 @@ class Chase1: public Pattern {
     virtual void update(CRGB ledbuffer[]) {
       Pattern::update(ledbuffer);
       for (int i = 0; i < ROWS; i++) {
-        ledbuffer[(position + LEDS_PER_ROW * i + 0) % int(NUM_LEDS)] = CRGB::Red;
-        ledbuffer[(position + LEDS_PER_ROW * i + 1) % int(NUM_LEDS)] = CRGB::Green;
-        ledbuffer[(position + LEDS_PER_ROW * i + 2) % int(NUM_LEDS)] = CRGB::Blue;
+        ledbuffer[(position + LEDS_PER_ROW * i + 0) % int(NUM_LEDS_TREE)] = CRGB::Red;
+        ledbuffer[(position + LEDS_PER_ROW * i + 1) % int(NUM_LEDS_TREE)] = CRGB::Green;
+        ledbuffer[(position + LEDS_PER_ROW * i + 2) % int(NUM_LEDS_TREE)] = CRGB::Blue;
       }
       position = (position + 1) % LEDS_PER_ROW;
     }
@@ -432,11 +431,10 @@ class Eye: public Pattern {
  * adapted from http://www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/
  */
 
- //TODO: pattern lights leds on inner core of star
 class Fire: public Pattern {
 
-    const byte NOROWS = 4;
-    byte heat[ROWS][LEDS_PER_ROW];
+    const static byte NOROWS = 4;
+    byte heat[NOROWS][LEDS_PER_ROW];
     const int Cooling = 55;
     const int Sparking = 120;
     int cooldown;
@@ -449,6 +447,7 @@ class Fire: public Pattern {
     }
 
     virtual void update(CRGB ledbuffer[]) {
+      clear_star(ledbuffer);
       cooldown = random(0, ((Cooling * 10) / LEDS_PER_ROW) + 2);
       for (int i = 0; i < NOROWS; i++)
         updaterow(i, ledbuffer);

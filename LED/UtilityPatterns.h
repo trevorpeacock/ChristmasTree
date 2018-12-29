@@ -27,6 +27,11 @@ class Pattern {
         ledbuffer[i] = ledbuffer[i-diff];
       }
     }
+    virtual void clear_star(CRGB ledbuffer[]) {
+      for (int i = NUM_LEDS-NUM_LEDS_STAR; i < NUM_LEDS; i++) {
+        ledbuffer[i] = CRGB::Black;
+      }
+    }
 };
 
 /*
